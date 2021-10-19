@@ -32,15 +32,34 @@ runtime_type_info :: (dest_name : string, source_name : string, fixed : [$N]Type
     return builder_to_string(*builder);
 }
 
+runtime_ini :: (dest_name : string, source_name : string, fixed : [$N]Type) -> string {
+    builder : String_Builder;
+    for fixed {
+        print_to_builder(*builder, "array_add(*%1, cast (*void)initializer_of(%2[%3]));\n", dest_name, source_name, it_index);
+    }
+    return builder_to_string(*builder);
+}
+
+any_from_type_info :: (ti : *Type_Info) -> Any #expand
+{
+    base_pointer : * void = alloc(ti.runtime_size, __temporary_allocator);
+    any : Any = ---;
+    any.value_pointer = base_pointer;
+    any.type = ti;
+    return any;
+}
+
 type_fixed :: Type.[X, Y, struct {anonymous := true;} ];
 rtti_array : [..]*Type_Info;
+rtini_array : [..](*void);
+
 main :: ()
 {
     rtti : string : #run runtime_type_info("rtti_array", "type_fixed", type_fixed);
     #insert rtti;
     print("type_fixed: %\n", type_fixed);
     check_const("type_fixed[0]", type_fixed[0]);
-    print("rtti codegen:\n%\n",  rtti);
+    print("\ngenerating code for runtime type_info:\n%\n",  rtti);
     print("rtti_array: %\n", rtti_array);
 
     x : X;
@@ -50,11 +69,26 @@ main :: ()
     z : struct {anonymous := true;};
     zz : struct {anonymous := true;};
     any_z : Any = z;
-    print("% [any_x]\n", type_id_from_any(any_x));
-    print("% [any_y]\n", type_id_from_any(any_y));
-    print("% [any_z]\n", type_id_from_any(any_z));
+    print("type_id % [any_x]\n", type_id_from_any(any_x));
+    print("type_id % [any_y]\n", type_id_from_any(any_y));
+    print("type_id % [any_z]\n", type_id_from_any(any_z));
 
     print("z (anonymous) type_info %\n", type_info(type_of(z)));
     print("zz (anonymous) type_info %\n", type_info(type_of(zz)));
     print("type_fixed[2] (anonymous) type_info %\n", type_info(type_fixed[2]));
+
+    // Initializer codegen
+    rtini : string : #run runtime_ini("rtini_array", "type_fixed", type_fixed);
+    print("\ngenerating code for runtime initializer_of:\n%\n", rtini);
+    #insert rtini;
+
+    print("initializing each type:\n");
+    for 0..rtti_array.count-1 {
+        any := any_from_type_info(rtti_array[it]);
+        rtini_array[it](any.value_pointer);
+        sb : String_Builder;
+        print_item_to_builder(*sb, any);
+        append(*sb, "\n");
+        print(builder_to_string(*sb));
+    }
 }
