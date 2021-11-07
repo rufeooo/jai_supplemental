@@ -19,16 +19,18 @@ thingS :: struct {
     id : s64;
     name : string;
 }
-// reference to another thing
+// may reference another thing
 ofS :: struct { othing : s64; }
 operator == :: (lhs : ofS, rhs : ofS) -> bool { return lhs.othing == rhs.othing; }
 
 // 1:many comparison type
-one_ofS :: struct { of : ofS; }
-operator == :: (one_of : one_ofS, other : [$N]ofS) -> bool
+match_oneS :: struct ($T : Type) { fixed : [1]T; }
+operator == :: (match_one : match_oneS($T), other_fixed : [$N]T) -> bool
 {
-    for other {
-        if one_of.of == it return true;
+    for one : match_one.fixed {
+        for other_fixed {
+            if one == it return true;
+        }
     }
     return false;
 }
@@ -59,7 +61,7 @@ main :: ()
     x : struct {
         name : string;
         id : s64;
-        of : one_ofS;
+        of : match_oneS(ofS);
     }
     // with some values we want to search for
     x.name = "alan";
@@ -84,7 +86,7 @@ main :: ()
     }
     search(thingS);
 
-    // We can use thingS at a different offset!
+    // We can use thingS at a different offset
     other_thingS :: struct {
         array : [..]s64;
         using thing : thingS;
@@ -92,7 +94,7 @@ main :: ()
     // And still search
     search(other_thingS);
 
-    // and so forth
+    // many times over
     another_thingS :: struct {
         using thing: thingS;
         pointer_array : [..]*void;
