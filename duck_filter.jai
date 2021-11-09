@@ -106,22 +106,33 @@ main :: ()
 
     for thing_array print("%\n", it);
 
-    for room_index: 0..room_array.count-1 {
-        perspective_room = *room_array[room_index];
-        print("\n-- standing in %\n", perspective_room.name);
-        for thing_index: 0..thing_array.count-1 {
-            perspective = *thing_array[thing_index];
-            print("  -- as %\n", perspective.name);
+    search :: (filter : $T) #expand {
+        print("\nSEARCH % ", filter);
+        for type_info(type_of(filter)).members {
+            if it_index print(", ");
+            print("%", it.name);
+        }
+        print("\n");
+        
+        for room_index: 0..room_array.count-1 {
+            perspective_room = *room_array[room_index];
+            print("-- standing in %\n", perspective_room.name);
+            for thing_index: 0..thing_array.count-1 {
+                perspective = *thing_array[thing_index];
+                print("  -- as %\n", perspective.name);
 
-            look : struct { _see :: perceive_unit; };
-            for thing_array {
-                if duck_filter(look, it) {
-                    print("    sees %\n", it.name);
-                }
-                else {
-                    print("    does not see %\n", it.name);
+                for thing_array {
+                    if duck_filter(filter, it) {
+                        print("    sees %\n", it.name);
+                    }
                 }
             }
         }
     }
+
+    look : struct { _see :: perceive_unit; };
+    search(look);
+    look_at : struct { name : string; _see :: perceive_unit; }
+    look_at.name = "ghost";
+    search(look_at);
 }
