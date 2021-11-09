@@ -132,7 +132,14 @@ main :: ()
 
     look : struct { _see :: perceive_unit; };
     search(look);
-    look_at : struct { name : string; _see :: perceive_unit; }
-    look_at.name = "ghost";
+    look_at : struct { name := "ghost"; _see :: perceive_unit; }
     search(look_at);
+
+    // or a search based on user input
+    arguments := get_command_line_arguments();
+    if (arguments.count > 1) {
+        look_runtime : struct { name : string; _see :: perceive_unit; }
+        look_runtime.name = arguments[1];
+        search(look_runtime);
+    }
 }
