@@ -15,24 +15,11 @@ macro_N :: (macro : string, $N : s64 = 1) -> string
 }
 
 // Deref collapses pointers into immutable copies (reducing codegen)
+deref :: (x : *$T) -> T #expand { return <<x; }
 deref :: (x : $T) -> T #expand #modify { if (T.type == .POINTER) T = null; } { return x; }
-type_deref :: ($T : Type) -> Type
-{
-    is_pointer :: #run -> bool { return type_info(T).type == .POINTER; };
-    #if is_pointer {
-        stack_var : s64;
-        t : T;
-        t = *stack_var;
-        immutable_val := deref(t);
-        return type_of(immutable_val);
-    }
-    else {
-        return T;
-    }
-}
 
 // for_each member of A (left-hand side) compare to member of B (right-hand side)
-// except PROCEDURES, which invoke with a deref copy of B (right-hand side)
+// member PROCEDURES invoke with an immutable copy of B (right-hand side)
 duck_filter :: (lhs : $A, rhs : $B) -> bool
 {
     lhs_members :: () -> []Type_Info_Struct_Member { return type_info(type_of(lhs)).members; };
