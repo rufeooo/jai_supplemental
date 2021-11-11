@@ -59,19 +59,6 @@ test :: ($name : string, $TEST : Type, $ENUM : Type)
 {
     print("\n-- test %\n", name);
 
-    // TODO: scope changes when mchoose macro is outside the callsite scope, wtf?
-    // mchoose :: (flag : $U, $code : string, $depth : s64) #expand {
-    //     #if (depth <= 0) {
-    //         #insert code;
-    //         return;
-    //     }
-    //     else {
-    //         for enum_values_as_enum(U) {
-    //             mchoose(it | flag, code, depth-1);
-    //         }
-    //     }
-    // }
-
     enum_values_count :: #run type_info(ENUM).values.count;
     outer_inner_k :: ($index : s64) {
         outer_depth :: index/enum_values_count;
