@@ -3,8 +3,7 @@
 //
 // Alternatives to run-time type information may be:
 //   Share a common member then use compiler cast (see how_to/160_type_restrictions.jai)
-//   Move variables into 100% compile time types (rely on other techniques to reduce codegen)
-//     (Maybe it is fast to have 70,000 types? @me)
+//   Move variables into 100% compile time types (this gets slow, see seventyk_type.jai)
 #import "Basic";
 
 check_const :: (text : string, $$T : Type) {
