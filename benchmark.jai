@@ -7,11 +7,11 @@ ENABLE_MUTATE :: false;
 
 MAX_LOOP :: 128;
 MAX_BUFFER :: 1 << 28;
-CYCLES_PER_SEC :: 2000000000.0;
+CYCLES_PER_SEC :: 2 * 1000 * 1000 * 1000;
 GB := cast(float)1<<30;
 
-step_type :: s64;
-array : [MAX_BUFFER/size_of(step_type)]step_type;
+stepT :: s64;
+array : [MAX_BUFFER/size_of(stepT)]stepT;
 
 array_fill :: ()
 {
@@ -28,7 +28,7 @@ main :: () #no_abc
 
     start := rdtsc();
 
-    sum : step_type = 0;
+    sum : stepT = 0;
     count : u64 = 0;
     for 0..MAX_LOOP-1 {
         for 0..array.count-1 {
